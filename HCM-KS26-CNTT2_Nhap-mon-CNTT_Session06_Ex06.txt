@@ -1,0 +1,38 @@
+Bài 6 : Rà soát Script bảo trì hệ thống
+Phần 1: Phân tích
+Điểm cực kỳ nguy hiểm trong đoạn mã:
+Remove-Item -Path "C:\*" -Recurse -Force, đặc biệt -Path "C:\*" có dấu sao (*) xác định toàn bộ tệp
+ý nghĩa:
+-Path là xác định đường dẫn mục tiêu
+-Recurse: Cho phép thực thi đệ quy, có thể vào các thư mục con trong thư mục cha
+-Force:là tham số bắt buộc chạy mà không cần xác nhận
+Hậu quả:
+-Path "C:\*" có dấu sao (*) xác định toàn bộ tệp, Recurse có thể vào các thư mục con trong thư mục cha, và Force ép buộc chạy lệnh mà không có cảnh báo , khi sử dụng Remove-Item thì nó sẽ xóa toàn bộ tệp ổ C và thư mục con cũng sẽ bị xóa ,mất dữ liệu vĩnh viễn
+-Sập hệ thống Windows
+-Máy chủ sẽ bị tê liệt
+Áp dụng 3 Nguyên tắc "Vàng" thẩm định mã AI:
+Nguyên tắc 1: AI chỉ là trợ lý hỗ trợ, không quá phụ thuộc,tin tưởng vao AI quá nhiều, soi lệnh và rà soát các câu lệnh có nguy cơ xóa hoặc can thiệp sâu hệ thống 
+Nguyên tắc 2: Tạo thư mục giả định/thư mục rác riêng biệt để chạy thử, kiểm tra kịch bản trước khi áp dụng vào dữ liệu thật
+Nguyên tắc 3: Thực Thi Kèm Log: Chạy script chính thức và điều hướng ghi nhật ký (log) vào tệp tin (ví dụ dùng toán tử &gt;&gt; audit.log) để tiện kiểm tra, đối chiếu.
+Phần 2: Triển khai 
+1. Di chuyển  thư mục:
+Set-Location -Path "D:\Lanfarm\Logs"
+2. Lọc các dòng chữ:
+Select-String -Path "system.log" -Pattern "WARNING" | Select-Object -ExpandProperty Line > issues.txt
+3. xóa các tệp cần xóa bên trong thư mục dự án:
+Remove-Item -Path "D:\Lanfarm\Logs\*" -Filter "*.tmp" -Force
+-Hoàn chỉnh cho tệp tệp safe_cleanup.ps1:
+<#
+#safe_cleanup
+Set-Location -Path "D:\Lanfarm\Logs"
+Select-String -Path "system.log" -Pattern "WARNING" | Select-Object -ExpandProperty Line > issues.txt
+Remove-Item -Path "D:\Lanfarm\Logs\*" -Filter "*.tmp" -Force
+#>
+
+Phần 3: Kiểm thử:
+-Xem nội dung tệp báo cáo bằng Get-Content:kết quả hiển thị toàn bộ log từ khóa WARNING được lọc ra từ tệp system.log
+Get-Content -Path "issues.txt"
+-Get-ChildItem để liệt kê lại thư mục, xác nhận các tệp .tmp đã bị xóa:kết quả tệp .tmp bị xóa còn tệp khác vẫn nguyên vẹn
+Get-ChildItem -Path "D:\Lanfarm\Logs"
+-Kiểm tra sự tồn tại của tệp báo cáo bằng Test-Path: Trả về kết quả True báo cáo đã được tạo thành công
+Test-Path "issues.txt"
