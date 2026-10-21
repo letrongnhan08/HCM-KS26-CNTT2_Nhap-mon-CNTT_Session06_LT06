@@ -21,13 +21,6 @@ Set-Location -Path "D:\Lanfarm\Logs"
 Select-String -Path "system.log" -Pattern "WARNING" | Select-Object -ExpandProperty Line > issues.txt
 3. xóa các tệp cần xóa bên trong thư mục dự án:
 Remove-Item -Path "D:\Lanfarm\Logs\*" -Filter "*.tmp" -Force
--Hoàn chỉnh cho tệp tệp safe_cleanup.ps1:
-<#
-#safe_cleanup
-Set-Location -Path "D:\Lanfarm\Logs"
-Select-String -Path "system.log" -Pattern "WARNING" | Select-Object -ExpandProperty Line > issues.txt
-Remove-Item -Path "D:\Lanfarm\Logs\*" -Filter "*.tmp" -Force
-#>
 
 Phần 3: Kiểm thử:
 -Xem nội dung tệp báo cáo bằng Get-Content:kết quả hiển thị toàn bộ log từ khóa WARNING được lọc ra từ tệp system.log
